@@ -1,0 +1,26 @@
+@model VendorTracker.Models.Vendor
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>@Model.Name</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <meta charset='utf-8'>
+</head>
+
+<body>
+    <h2>@Model.Name</h2>
+    <p>Description: @Model.Description</p>
+    <h3>Orders</h3>
+    <ul>
+        @foreach (var order in Model.Orders)
+        {
+            <li>@order.Title - @order.Description - @order.Price - @order.Date</li>
+        }
+    </ul>
+<a href="@Url.Action("NewOrder", "Vendors", new { id = Model.Id })" class="btn btn-primary">Create a new order for this vendor</a>
+</body>
+
+</html>
