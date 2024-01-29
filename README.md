@@ -33,7 +33,7 @@ build a  MVC application to help track the vendors that purchase baked goods and
 8. To run tests using MSTest, navigate to the ProjectName.Tests directory in your terminal and type `$ dotnet test`
 
 ## Known Bugs
-* Cant Run test for some reason, cant figure out why, probably something small wrong i didnt figure out.
+* Cant Run test for some reason, cant figure out why, probably something small i did wrong that i didnt figure out.
 * Cant get Order info from vendor into /vendors/{id}
 
 ## License
