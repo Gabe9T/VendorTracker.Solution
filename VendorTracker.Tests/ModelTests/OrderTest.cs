@@ -1,68 +1,86 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections.Generic;
+using VendorTracker.Controllers;
 using VendorTracker.Models;
 
-namespace VendorTracker.TestTools
+namespace VendorTracker.Tests
 {
     [TestClass]
-    public class OrderTests
+    public class OrdersControllerTests
     {
         [TestMethod]
-        public void OrderConstructor_CreatesInstanceOfOrder_Order()
+        public void Index_ReturnsViewResult_WithVendorAndOrders()
         {
-            DateTime orderDate = DateTime.Now;
-            Order newOrder = new Order("Croissants", "Freshly baked croissants", 10.99, orderDate);
+            var controller = new OrdersController();
+            var vendor = new Vendor("Test Vendor", "Test Description");
 
-            Assert.AreEqual("Croissants", newOrder.Title);
-            Assert.AreEqual("Freshly baked croissants", newOrder.Description);
-            Assert.AreEqual(10.99, newOrder.Price);
-            Assert.AreEqual(orderDate, newOrder.Date);
-            Assert.AreNotEqual(0, newOrder.Id);
+            var result = controller.Index(vendor.Id) as ViewResult;
+
+            Assert.IsNotNull(result);
+            var model = result.Model as Dictionary<string, object>;
+            Assert.IsNotNull(model);
+            Assert.AreEqual(vendor, model["vendor"]);
+            Assert.IsInstanceOfType(model["orders"], typeof(List<Order>));
         }
 
         [TestMethod]
-        public void OrderConstructor_GeneratesUniqueIdsForOrders()
+        public void New_ReturnsViewResult_WithVendor()
         {
-            Order order1 = new Order("Croissants", "Freshly baked croissants", 10.99, DateTime.Now);
-            Order order2 = new Order("Baguette", "French baguette", 5.99, DateTime.Now);
+            var controller = new OrdersController();
+            var vendor = new Vendor("Test Vendor", "Test Description");
 
-            Assert.AreNotEqual(order1.Id, order2.Id, "Ids are not unique for different orders");
+            var result = controller.New(vendor.Id) as ViewResult;
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(vendor, result.Model);
         }
 
         [TestMethod]
-        public void GetDescription_ReturnsOrderDescription_String()
+        public void Create_ValidOrder_ReturnsRedirectToActionResult()
         {
-            Order newOrder = new Order("Croissants", "Freshly baked croissants", 10.99, DateTime.Now);
-            string description = newOrder.GetDescription();
+            var controller = new OrdersController();
+            var vendor = new Vendor("Test Vendor", "Test Description");
+            var title = "Test Order";
+            var description = "Test Description";
+            var price = 10.5;
+            var date = DateTime.Now;
 
-            Assert.AreEqual("Freshly baked croissants", description);
+            var result = controller.Create(vendor.Id, title, description, price, date) as RedirectToActionResult;
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual("Index", result.ActionName);
         }
 
         [TestMethod]
-        public void SetDescription_ModifiesOrderDescription_DescriptionUpdated()
+        public void Create_InvalidOrder_ReturnsNotFoundResult()
         {
-            Order newOrder = new Order("Croissants", "Freshly baked croissants", 10.99, DateTime.Now);
-            newOrder.SetDescription("Delicious croissants with butter");
+            var controller = new OrdersController();
+            var vendor = new Vendor("Test Vendor", "Test Description");
+            var title = "";
+            var description = "Test Description";
+            var price = 10.5;
+            var date = DateTime.Now;
 
-            Assert.AreEqual("Delicious croissants with butter", newOrder.Description);
+            var result = controller.Create(vendor.Id, title, description, price, date) as NotFoundResult;
+
+            Assert.IsNotNull(result);
         }
 
         [TestMethod]
-        public void GetPrice_ReturnsOrderPrice_Double()
+        public void Create_OrderForNonExistentVendor_ReturnsNotFoundResult()
         {
-            Order newOrder = new Order("Croissants", "Freshly baked croissants", 10.99, DateTime.Now);
-            double price = newOrder.GetPrice();
+            var controller = new OrdersController();
+            var vendorId = 9999; // Not real 
+            var title = "Test Order";
+            var description = "Test Description";
+            var price = 10.5;
+            var date = DateTime.Now;
 
-            Assert.AreEqual(10.99, price);
-        }
+            var result = controller.Create(vendorId, title, description, price, date) as NotFoundResult;
 
-        [TestMethod]
-        public void SetPrice_ModifiesOrderPrice_PriceUpdated()
-        {
-            Order newOrder = new Order("Croissants", "Freshly baked croissants", 10.99, DateTime.Now);
-            newOrder.SetPrice(12.99);
-
-            Assert.AreEqual(12.99, newOrder.Price);
+            Assert.IsNotNull(result);
         }
     }
 }
