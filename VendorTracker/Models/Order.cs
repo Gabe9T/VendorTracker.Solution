@@ -1,5 +1,3 @@
-using System;
-
 namespace VendorTracker.Models
 {
     public class Order
@@ -20,5 +18,13 @@ namespace VendorTracker.Models
         public double Price { get; set; }
         public DateTime Date { get; set; }
         public int Id { get; }
+
+        public void UpdateOrder(string title, string description, double price, DateTime date)
+        {
+            Title = title;
+            Description = description;
+            Price = price;
+            Date = date;
+        }
     }
 }

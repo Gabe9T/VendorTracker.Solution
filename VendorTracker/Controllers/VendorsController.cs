@@ -1,48 +1,60 @@
 using Microsoft.AspNetCore.Mvc;
-using VendorTracker.Models; 
-using VendorTracker.Data; 
 using System.Collections.Generic;
+using VendorTracker.Models;
 
 namespace VendorTracker.Controllers
 {
     public class VendorsController : Controller
     {
-        private static List<Vendor> _vendors = new List<Vendor>();
-
         [HttpGet("/vendors")]
-        public ActionResult Index()
+        public IActionResult Index()
         {
-            return View(_vendors);
+            List<Vendor> allVendors = Vendor.GetAll();
+            return View(allVendors);
         }
 
         [HttpGet("/vendors/new")]
-        public ActionResult New()
+        public IActionResult New()
         {
             return View();
         }
 
-        [HttpPost("/vendors/create")]
-        public ActionResult Create(string name, string description)
+        [HttpGet("/vendors/{id}/show")]
+        public IActionResult Show(int id)
         {
-            Vendor newVendor = new Vendor(name, description);
-            _vendors.Add(newVendor);
-            return RedirectToAction("Index");
-        }
-
-        [HttpGet("/vendors/{id}")]
-        public ActionResult Show(int id)
-        {
-            Vendor vendor = _vendors.Find(v => v.Id == id);
+            var vendor = Vendor.Find(id);
+            if (vendor == null)
+            {
+                return NotFound();
+            }
             return View(vendor);
         }
 
-[HttpGet("/Vendors/{id}/Orders/NewOrder")]
-public ActionResult NewOrder(int id)
+        [HttpPost("/vendors/create")]
+public IActionResult Create(string name, string description)
 {
-    Vendor vendor = _vendors.Find(v => v.Id == id);
-    ViewBag.VendorId = id;
-    return View("~/Views/Orders/NewOrder.cshtml", vendor);
+    if (string.IsNullOrEmpty(name)) 
+    {
+        return NotFound();
+    }
+
+    Vendor newVendor = new Vendor(name, description);
+    return RedirectToAction("Index");
 }
 
+        [HttpPost("/vendors/{vendorId}/orders")]
+        public ActionResult Create(int vendorId, string title, string description, double price, DateTime date)
+        {
+            var selectedVendor = Vendor.Find(vendorId);
+            if (selectedVendor == null)
+            {
+                return NotFound();
+            }
+
+            var newOrder = new Order(title, description, price, date);
+            selectedVendor.Orders.Add(newOrder);
+
+            return RedirectToAction("Index", "Orders", new { id = vendorId });
+        }
     }
 }

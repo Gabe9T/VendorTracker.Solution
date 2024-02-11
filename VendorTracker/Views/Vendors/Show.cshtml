@@ -18,9 +18,11 @@
         @foreach (var order in Model.Orders)
         {
             <li>@order.Title - @order.Description - @order.Price - @order.Date</li>
+        <hr/>
         }
     </ul>
-<a href="@Url.Action("NewOrder", "Vendors", new { id = Model.Id })" class="btn btn-primary">Create a new order for this vendor</a>
+
+<a href="@Url.Action("New", "Orders", new { id = Model.Id })" class="btn btn-primary">Create a new order for this vendor</a>
 </body>
 
 </html>
