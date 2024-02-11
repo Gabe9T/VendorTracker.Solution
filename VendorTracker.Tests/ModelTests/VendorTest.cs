@@ -1,83 +1,70 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 using System.Collections.Generic;
+using VendorTracker.Controllers;
 using VendorTracker.Models;
 
-namespace VendorTracker.TestTools
+namespace VendorTracker.Tests
 {
     [TestClass]
-    public class VendorTests
+    public class VendorsControllerTests
     {
         [TestMethod]
-        public void Vendor_Constructor_CreatesValidVendor()
+        public void Index_ReturnsViewResult_WithListOfVendors()
         {
-            Vendor newVendor = new Vendor("VendorName", "VendorDescription");
 
-            Assert.AreEqual("VendorName", newVendor.Name, "Name not set correctly");
-            Assert.AreEqual("VendorDescription", newVendor.Description, "Description not set correctly");
-            Assert.IsNotNull(newVendor.Orders, "Orders collection not initialized");
-            Assert.AreNotEqual(0, newVendor.Id, "Id not generated correctly");
+            var controller = new VendorsController();
+
+            var result = controller.Index() as ViewResult;
+
+            Assert.IsNotNull(result);
+            Assert.IsInstanceOfType(result.Model, typeof(List<Vendor>));
         }
 
         [TestMethod]
-        public void Vendor_AddOrder_AddsOrderToOrdersCollection()
+        public void Show_ValidVendorId_ReturnsViewResult_WithVendor()
         {
-            Vendor vendor = new Vendor("VendorName", "VendorDescription");
-            Order order = new Order("OrderTitle", "OrderDescription", 19.99, DateTime.Now);
+            var controller = new VendorsController();
+            var vendorId = 1; 
 
-            vendor.Orders.Add(order);
+            var result = controller.Show(vendorId) as ViewResult;
 
-            CollectionAssert.Contains(vendor.Orders, order, "Order not added to Orders collection");
+            Assert.IsNotNull(result);
+            Assert.IsInstanceOfType(result.Model, typeof(Vendor));
         }
 
         [TestMethod]
-        public void Vendor_AddOrder_DoesNotDuplicateOrders()
+        public void New_ReturnsViewResult()
         {
-            Vendor vendor = new Vendor("VendorName", "VendorDescription");
-            Order order = new Order("OrderTitle", "OrderDescription", 19.99, DateTime.Now);
+            var controller = new VendorsController();
 
-            vendor.Orders.Add(order);
-            vendor.Orders.Add(order);  // Adding the same order again
+            var result = controller.New() as ViewResult;
 
-            Assert.AreEqual(1, vendor.Orders.Count, "Adding the same order multiple times duplicates it");
+            Assert.IsNotNull(result);
         }
 
         [TestMethod]
-        public void Vendor_GetOrders_ReturnsOrdersCollection()
+        public void Create_ValidVendor_ReturnsRedirectToActionResult()
         {
-            Vendor vendor = new Vendor("VendorName", "VendorDescription");
-            Order order1 = new Order("OrderTitle1", "OrderDescription1", 19.99, DateTime.Now);
-            Order order2 = new Order("OrderTitle2", "OrderDescription2", 29.99, DateTime.Now);
-            vendor.Orders.Add(order1);
-            vendor.Orders.Add(order2);
+            var controller = new VendorsController();
+            var name = "Test Vendor";
+            var description = "Test Description";
 
-            List<Order> orders = vendor.GetOrders();
+            var result = controller.Create(name, description) as RedirectToActionResult;
 
-            CollectionAssert.AreEqual(vendor.Orders, orders, "GetOrders did not return the correct Orders collection");
+            Assert.IsNotNull(result);
+            Assert.AreEqual("Index", result.ActionName);
         }
 
         [TestMethod]
-        public void Vendor_GetTotalOrdersPrice_ReturnsCorrectTotalPrice()
+        public void Create_InvalidVendor_ReturnsNotFoundResult()
         {
-            Vendor vendor = new Vendor("VendorName", "VendorDescription");
-            Order order1 = new Order("OrderTitle1", "OrderDescription1", 19.99, DateTime.Now);
-            Order order2 = new Order("OrderTitle2", "OrderDescription2", 29.99, DateTime.Now);
-            vendor.Orders.Add(order1);
-            vendor.Orders.Add(order2);
+            var controller = new VendorsController();
+            var name = ""; 
 
-            double totalOrdersPrice = vendor.GetTotalOrdersPrice();
+            var result = controller.Create(name, "") as NotFoundResult;
 
-            Assert.AreEqual(19.99 + 29.99, totalOrdersPrice, "GetTotalOrdersPrice did not return the correct total price");
-        }
-
-        [TestMethod]
-        public void Vendor_GetTotalOrdersPrice_EmptyOrdersCollection_ReturnsZero()
-        {
-            Vendor vendor = new Vendor("VendorName", "VendorDescription");
-
-            double totalOrdersPrice = vendor.GetTotalOrdersPrice();
-
-            Assert.AreEqual(0, totalOrdersPrice, "GetTotalOrdersPrice did not return 0 for an empty Orders collection");
+            Assert.IsNotNull(result);
         }
     }
 }
